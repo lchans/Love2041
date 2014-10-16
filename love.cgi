@@ -8,7 +8,6 @@ use CGI qw/:all/;
 use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
 use Data::Dumper;  
 use List::Util qw/min max/;
-use strict; 
 
 my $html; 
 my $directory; 
@@ -25,37 +24,43 @@ my $image;
 my @text;
 my $line;
 
-$directory = "./students";
 
+
+$directory = "./students";
 print "Content-type: text/html\n\n";
 print "<html>";
-$person = getCurrent(); 
-$person2 = getCurrent(); 
 print getHeader();
 print getNext();
-print '<div class="row">';
-print '<div class="col-md-8 col-md-offset-2">';
-print '<div class="col-md-6">';
-print getImage($person); 
-print '</div>';
-print '<div class="col-md-6">';
-print getText($person); 
-print getText($person2); 
-print '</div>';
-print '</div>';
-print '</div>';
+$current = param('current'); 
 
-print "</html>";
+foreach my $i (0..9) { 
+    $person = getCurrent();
+    print '<div class="row">';
+    print '<div class="container">';
+    param('person', $person); 
+    print getImage($person); 
+    print getInfo(); 
+    #print getText($person); 
+    print '</div>';
+    print '</div>';
+    print "</html>";
+}
+if (defined $current) {
+    print getText($current);
+}
+
+
 exit 0;
 
 sub getHeader { 
 return
 	'<head> 
 	<title>LOVE2041</title> 
-	<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+	<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"    rel="stylesheet">
 	</head>
 	'
 }
+
 
 sub getCurrent { 
 	$number = param('number') || 0; 
@@ -92,11 +97,19 @@ sub getText {
 
 sub getNext { 
 	return	start_form, "\n",
-			hidden('number', $number + 1),"\n",
+			hidden('number', $number + 10),"\n",
 			submit('Next student'),"\n",
 			end_form, "\n",
 }
 
+
+sub getInfo { 
+param('current', $person);
+    return start_form, 
+    hidden ('current', $person),
+    submit ('get info'), 
+    end_form, 
+}
 
 
 
