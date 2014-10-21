@@ -89,22 +89,15 @@ sub browsePageHeader {
     <form class="navbar-form navbar-left" role="search">';
     print searchbar();
     $k = $j + 8;
-    print "Showing profiles $j to $k<br>";
+
     print "current logged in as: $login";
     print'</form><div><ul class="nav navbar-nav navbar-right">'; 
 
     print '<li>';
     print goHomePage();
     print '</li>';
-    print '<li>';
-    if ($k < $#people) {
-    print goNextPage();
-    }
-    print '</li><li>';
-    if ($j > 0) {
-    print goPreviousPage();
-    }
-    print '</li><li>';
+
+    print'<li>';
         print gologout();
         print '</li>';
 
@@ -153,8 +146,16 @@ sub getProfile {
 
 sub browsePageContent { 
     @people = glob ("$directory/*");
-    print '<div class="container">';
     $j = min ($j + 8, $#people);
+    print '<div class="row"><div class="col-md-1">';
+
+    if ($j - 8 > 0) {
+    print goPreviousPage();
+    }
+    print '</div>';
+    print '<div class="col-md-9">';
+    print '<div class="container">';
+
     for ($i = $j - 8; $i < $j; $i++) { 
         print '<div class="col-md-3">';
         $person = getUsername($people[$i]);
@@ -176,7 +177,25 @@ sub browsePageContent {
         print '</div>';
 
     }
-    print "</div>";
+
+    $j = $j - 8;
+    print '</div></div>';
+    print '<div class="col-md-1">';
+        if ($k < $#people) {
+    print goNextPage();
+    }
+    print '</div></div>';
+    print "<center>";
+    print "Showing profiles $j to $k<br><br>";
+    print '<ul class="nav navbar-nav">';
+    print '<li>';
+
+    print '</li><li>';
+
+    print '</li>';
+    print "</ul>";
+    print "</center>";
+
 }
 
 sub searchbar { 
@@ -312,12 +331,12 @@ sub goNextPage {
 }
 
 sub goPreviousPage { 
-    param('page', $j - 8);
+    param('page', $j - 16);
     param('browse_page', 'true');
     return
         start_form,
         hidden ('browse_page', $browsePage), 
-        hidden ('page', $j - 8), 
+        hidden ('page', $j - 16), 
         submit(
             -name=>'Previous',
             -class=>"btn btn-default",
