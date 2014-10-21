@@ -3,17 +3,38 @@ use CGI qw/:all/;
 use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
 use Data::Dumper;  
 use List::Util qw/min max/;
+    use CGI::Cookie;
+
+
+my $login = param('login');
+my $password = param('password');
+
+if (defined $login && defined $password) {
+    my $u = CGI::Cookie->new(
+    -name => 'username',
+    -value => $login,
+    );
+
+    my $p = CGI::Cookie->new(
+    -name => 'password',
+    -value => $password,
+    );
+    print "Set-Cookie: $u\n";
+    print "Set-Cookie: $p\n";
+}
+
+      
 print "Content-type: text/html\n\n";
-print   
-'<html>
- <head> 
- <title>LOVE2041</title> 
- <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
- <link href="http://fonts.googleapis.com/css?family=Oswald:400,700,300" rel="stylesheet" type="text/css">
+print '
+<html>
+<head> 
+<title>LOVE2041</title> 
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="http://fonts.googleapis.com/css?family=Oswald:400,700,300" rel="stylesheet" type="text/css">
 <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet" type="text/css">
- <link href="custom.css" rel="stylesheet">
- </head>
-';
+<link href="custom.css" rel="stylesheet">
+</head>';
+
 $directory = "./students";
 $homePage = param('home_page'); 
 $browsePage = param('browse_page'); 
@@ -24,67 +45,86 @@ $registerPage = param('register_page');
 $person = param('person');
 $j = param('page') || 0; 
 
-    my $login = param('login');
-    my $password = param('password');
 
+if (authenticate()) { 
     if (defined $homePage) { 
         print '<center>';
-        print '<h5> LOVE2041</h5>';
-        print goBrowsePage();
+        print '<h5> LOVE2041</h5>'; 
+        loginPage();
+        print goRegisterPage();
         print '</center>';
     } elsif (defined $browsePage) { 
-        print '<div id="wrapper">';
-        sideBar();
-        print '<div id="page-content-wrapper">';
+        browsePageHeader();
         browsePageContent();
-        print '</div></div>'
     } elsif (defined $profilePage) { 
-        print 'Profile Page';
-        print param('person'); 
-        print profilePage();
+        profilePage();
         print goBrowsePage();
     } elsif (defined $searchPage) { 
         print param('what');
         searchPageContent();
-    } elsif (defined $registerPage) {
-    
-    
-    
     } else { 
-        print '<center>';
-        print '<h5> LOVE2041</h5>';
-        print loginPage();
-        print goRegisterPage();
-        print '</center>';
-    }
+        browsePageHeader();
+        browsePageContent();
+    } 
+} else { 
+    print '<center>';
+    print '<h5> LOVE2041</h5>'; 
+    loginPage();
+    print goRegisterPage();
+    print '</center>';
+}
 
 print '</html>';
 
-sub sideBar { 
-        @people = glob ("$directory/*");
-    print '
-        <div id="sidebar-wrapper">
-            <ul class="sidebar-nav">
-                <h6>LOVE2041  </h6>
-                <form class="form-inline" role="search">';
-                    print searchbar();
-                print'</form>';
-        $k = $j + 6;
-        print "Showing profiles $j to $k";
-        print goHomePage();
-        if ($k < $#people) {
-        print goNextPage();
-        }
-        if ($j > 0) { 
-        print goPreviousPage();
-        }
-        print '</ul></div>';
+sub browsePageHeader { 
+    %cookies = CGI::Cookie->fetch;
+    my $login = $cookies{'username'}->value;
+    @people = glob ("$directory/*");
+    print ' 
+    <nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+    <div class="navbar-header">
+    <h6>LOVE2041  </h6>
+    </div>
+    <form class="navbar-form navbar-left" role="search">';
+    print searchbar();
+    $k = $j + 8;
+    print "Showing profiles $j to $k<br>";
+    print "current logged in as: $login";
+    print'</form><div><ul class="nav navbar-nav navbar-right">'; 
+
+    print '<li>';
+    print goHomePage();
+    print '</li>';
+    print '<li>';
+    if ($k < $#people) {
+    print goNextPage();
+    }
+    print '</li><li>';
+    if ($j > 0) {
+    print goPreviousPage();
+    }
+    print '</li><li>';
+        print gologout();
+        print '</li>';
+
+    print '</ul></div></div></nav>';
+
 }
 
-sub authenticateUser {
-    my $login = param('login');
-    my $password = param('password');
-    return $login && $password && $login eq "love" && $password eq "love";
+sub authenticate {
+    %cookies = CGI::Cookie->fetch;
+    my $password = $cookies{'password'}->value;
+    my $login = $cookies{'username'}->value;
+    open $file, "username.txt" or die;
+    $file = join ('', <$file>);
+    @text = split("\n", $file);
+    foreach $line (@text) { 
+        if ($line eq "$login $password" ) { 
+            return 1;
+        }
+    } 
+    return 0; 
 }
 
 
@@ -96,19 +136,7 @@ sub getImage {
 
 sub getUsername { 
     $person = $_[0]; 
-    $person =~ s/\.\///g;sub goNextPage { 
-    param('page', $j + 6);
-    param('browse_page', 'true');
-    return
-        start_form,
-        hidden ('browse_page', $browsePage), 
-        hidden ('page', $j + 6), 
-        submit(
-            -name=>'Next',
-            -class=>"btn btn-default",
-        ),  
-        end_form, 
-}
+    $person =~ s/\.\///g;
     $person =~ s/students\///;
     param('person', $person); 
     return $person;
@@ -119,16 +147,16 @@ sub getProfile {
     $n = "$person/profile.txt";
     open $profile, "students/$n" or die;
     $profile = join ('', <$profile>);
-    @text = split ("\n", $profile); 
+    @text = split ("\n", $profile);
     return @text; 
 }
 
 sub browsePageContent { 
     @people = glob ("$directory/*");
     print '<div class="container">';
-    $j = min ($j + 6, $#people);
-    for ($i = $j - 6; $i < $j; $i++) { 
-        print '<div class="col-md-4">';
+    $j = min ($j + 8, $#people);
+    for ($i = $j - 8; $i < $j; $i++) { 
+        print '<div class="col-md-3">';
         $person = getUsername($people[$i]);
         @text = getProfile ($person);
         $count = 0; 
@@ -142,7 +170,7 @@ sub browsePageContent {
            }
         }
         print getImage($person); 
-        print "<br><username>$person</username><br>";
+        print "<username>$person</username><br>";
         print "<description>$realName, $age</description>";
         print goProfilePage();
         print '</div>';
@@ -152,30 +180,30 @@ sub browsePageContent {
 }
 
 sub searchbar { 
-    param('search_page', 'true'); 
+    param('search_page', 'true');
     return 
         start_form, 
         hidden('search_page', $searchPage), 
         textfield (
             -name=>'search_term',
-            -class=>'form-control input-sm',
+            -class=>'form-control',
         ),
         submit (            
             -name=>'Search!',
-            -class=>"btn btn-default btn-sm",
+            -class=>"btn btn-default",
         ), 
         end_form, 
 }
 
 sub searchPageContent { 
-
+    print browsePageHeader();
     @people = glob ("$directory/*");
     for ($i = 0; $i < $#people; $i++) { 
         $person = getUsername($people[$i]);
         @text = getProfile ($person);;
         foreach $line (@text) { 
             if ($line =~ /$searchTerm/i) { 
-                print '<center><div  The full example is this: class="col-md-2">';
+                print '<center><div class="col-md-2">';
                 print "<h4>$name</h4>";
                 print getImage($person);
                 print goProfilePage();
@@ -187,48 +215,38 @@ sub searchPageContent {
 }
 
 sub profilePage { 
+print '<div class="row">';
+    print '<div class="col-md-6">';
+    print getImage($person);
+    print '</div>';
     $name = "$person/profile.txt";
-    open $profile, "students/$name" or die;
-    $profile = join ('', <$profile>);
-    param('page', $j - 6);
-    param('browse_page', 'true');
-    return
-        start_form,
-        hidden ('browse_page', $browsePage), 
-        hidden ('page', $j - 6), 
-        submit(
-            -name=>'Previous',
-            -class=>"btn btn-default",
-        ),  
-        end_form, 
-}
-
-sub getProfile {
-    @text = split ("\n", $profile);
-    $html = '';
-    foreach $line (@text) { 
-        if ($line =~ /:$/) {
-            $html .= "<b>$line</b><br>";
-        } else { 
-            $html .= "$line<br>";
-        }
-    }
-    return $html;
+	open $profile, "students/$name" or die;
+	$profile = join ('', <$profile>);
+	@text = split ("\n", $profile);
+	print '<div class="col-md-6">';
+	foreach $line (@text) { 
+		if ($line =~ /:$/) {
+			print "<b>$line</b><br>";
+		} else { 
+			print"$line<br>";
+		}
+	}
+	print '</div>';
+	print '</div>';
 }
 
 
 sub loginPage {
     param('browse_page', 'true');
     print start_form,
-         hidden ('browse_page', $browsePage), 
-        'Enter login: ', textfield('login'), "<br>\n",
-        ' Enter password: ', password_field('password'),, "<br>\n",
-               submit(
+        hidden ('browse_page', $browsePage), 
+        textfield('login'), 
+        password_field('password'),
+        submit(
             -name=>'Begin!',
             -class=>"btn btn-default",
         ),  
         end_form,
-        end_html;
 }
 
 sub goProfilePage { 
@@ -255,9 +273,21 @@ sub goHomePage {
         end_form, 
 }
 
+sub goRegisterPage { 
+    param('register_page', 'true');
+    return
+        start_form,
+        hidden ('register_page', $registerPage), 
+        submit(
+            -name=>'Register!',
+            -class=>"btn btn-default",
+        ),  
+        end_form, 
+}
+
 sub goBrowsePage { 
     param('browse_page', 'true');
-    return 
+    return
         start_form,
         hidden ('browse_page', $browsePage), 
         submit(
@@ -268,12 +298,12 @@ sub goBrowsePage {
 }
 
 sub goNextPage { 
-    param('page', $j + 6);
+    param('page', $j + 8);
     param('browse_page', 'true');
     return
         start_form,
         hidden ('browse_page', $browsePage), 
-        hidden ('page', $j + 6), 
+        hidden ('page', $j + 8), 
         submit(
             -name=>'Next',
             -class=>"btn btn-default",
@@ -282,30 +312,44 @@ sub goNextPage {
 }
 
 sub goPreviousPage { 
-    param('page', $j - 6);
+    param('page', $j - 8);
     param('browse_page', 'true');
     return
         start_form,
         hidden ('browse_page', $browsePage), 
-        hidden ('page', $j - 6), 
+        hidden ('page', $j - 8), 
         submit(
-            -name=>'Next',
+            -name=>'Previous',
             -class=>"btn btn-default",
         ),  
         end_form, 
 }
 
-sub goRegisterPage { 
-    param('register_page', 'true');
+sub gologout { 
+    logout();
+    param('home_page', 'true');
     return
         start_form,
-        hidden ('register_page', $registerPage), 
+        hidden ('home_page', $homePage), 
         submit(
-            -name=>'Register',
-            -class=>"btn btn-default",
+            -name=>'Logout!',
+            -class=>"btn btn-danger",
         ),  
         end_form, 
 }
 
 
+sub logout { 
+    my $p = CGI::Cookie->new(
+        -value   => '',
+        -path    => '/',
+        -expires => '-1d'
+    );
+
+    my $u = CGI::Cookie->new(
+        -value   => '',
+        -path    => '/',
+        -expires => '-1d'
+    );
+}
 
