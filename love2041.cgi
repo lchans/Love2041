@@ -153,9 +153,8 @@ sub browsePageContent {
     print goPreviousPage();
     }
     print '</div>';
-    print '<div class="col-md-9">';
+    print '<div class="col-md-10">';
     print '<div class="container">';
-
     for ($i = $j - 8; $i < $j; $i++) { 
         print '<div class="col-md-3">';
         $person = getUsername($people[$i]);
@@ -177,23 +176,15 @@ sub browsePageContent {
         print '</div>';
 
     }
-
     $j = $j - 8;
     print '</div></div>';
     print '<div class="col-md-1">';
-        if ($k < $#people) {
+    if ($k < $#people) {
     print goNextPage();
     }
     print '</div></div>';
     print "<center>";
     print "Showing profiles $j to $k<br><br>";
-    print '<ul class="nav navbar-nav">';
-    print '<li>';
-
-    print '</li><li>';
-
-    print '</li>';
-    print "</ul>";
     print "</center>";
 
 }
@@ -325,7 +316,7 @@ sub goNextPage {
         hidden ('page', $j + 8), 
         submit(
             -name=>'Next',
-            -class=>"btn btn-default",
+            -class=>"btn btn-warning pull-right",
         ),  
         end_form, 
 }
@@ -339,7 +330,7 @@ sub goPreviousPage {
         hidden ('page', $j - 16), 
         submit(
             -name=>'Previous',
-            -class=>"btn btn-default",
+            -class=>"btn btn-warning",
         ),  
         end_form, 
 }
