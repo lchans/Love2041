@@ -15,11 +15,10 @@ $directory = "./students";
 $homePage = param('home_page'); 
 $browsePage = param('browse_page'); 
 $profilePage = param('profile_page');
-$searchPage = param('search_page'); 
 $searchTerm = param('search_term');
 $registerPage = param('register_page');
-$person = param('person');
-$j = param('page') || 0; 
+$person = param('view_person');
+$pageNumber = param('page') || 0; 
 
 if (defined $login && defined $password) {
 my $u = CGI::Cookie->new (
@@ -54,7 +53,7 @@ if (authenticate()) {
         loginPage();
         print goRegisterPage();
         print '</center>';
-    } elsif (defined $browsePage || defined $searchPage) { 
+    } elsif (defined $browsePage || defined $searchTerm) { 
         browsePageHeader();
         browsePageContent();
     } elsif (defined $profilePage) { 
@@ -97,11 +96,10 @@ sub authenticate {
     return 0; 
 }
 
+
 sub searchbar { 
-    param('search_page', 'true');
     return 
-        start_form, 
-        hidden('search_page', $searchPage), 
+        start_form,  
         textfield (
             -name=>'search_term',
             -class=>'form-control',
@@ -129,7 +127,6 @@ sub logout {
 }
 
 sub loginPage {
-    param('browse_page', 'true');
     print start_form,
         hidden ('browse_page', $browsePage), 
         textfield('login'), 
@@ -141,76 +138,13 @@ sub loginPage {
         end_form,
 }
 
-sub goProfilePage { 
-    param('profile_page', 'true'); 
-    return 
-        start_form, 
-        hidden('profile_page', $profilePage), 
-        hidden('person', $person), 
-        submit (
-            -name=>'View Information!',
-            -class=>"btn btn-default",), 
-        end_form, 
-}
 
-sub goRegisterPage { 
-    param('register_page', 'true');
-    return
-        start_form,
-        hidden ('register_page', $registerPage), 
-        submit(
-            -name=>'Register!',
-            -class=>"btn btn-default",
-        ),  
-        end_form, 
-}
-
-sub goBrowsePage { 
-    param('browse_page', 'true');
-    return
-        start_form,
-        hidden ('browse_page', $browsePage), 
-        submit(
-            -name=>'Go Back!',
-            -class=>"btn btn-default",
-        ),  
-        end_form, 
-}
-
-sub goNextPage { 
-    param('page', $j + 8);
-    param('browse_page', 'true');
-    return
-        start_form,
-        hidden ('browse_page', $browsePage), 
-        hidden ('page', $j + 8), 
-        submit(
-            -name=>'Next',
-            -class=>"btn btn-warning pull-right",
-        ),  
-        end_form, 
-}
-
-sub goPreviousPage { 
-    param('page', $j - 16);
-    param('browse_page', 'true');
-    return
-        start_form,
-        hidden ('browse_page', $browsePage), 
-        hidden ('page', $j - 16), 
-        submit(
-            -name=>'Previous',
-            -class=>"btn btn-warning",
-        ),  
-        end_form, 
-}
 
 sub gologout { 
     logout();
-    param('home_page', 'true');
     return
         start_form,
-        hidden ('home_page', $homePage), 
+        hidden ('home_page', 'true'), 
         submit(
             -name=>'Logout!',
             -class=>"btn btn-danger",

@@ -2,40 +2,45 @@
 
 require "helper_functions.cgi";
 
+@people = glob ("$directory/*");
+$next = min($pageNumber + 8, $#people); 
+$previous = max(1, $pageNumber - 8); 
+
 sub browsePageHeader { 
-    my $login = getLogin();
-    @people = glob ("$directory/*");
-    print ' 
+    print qq ~
     <nav class="navbar navbar-default" role="navigation">
-    <div class="container">
-    <div class="navbar-header">
-    <h6>LOVE2041  </h6>
-    </div>
-    <form class="navbar-form navbar-left" role="search">';
-    print searchbar();
-    $k = $j + 8;
-    print "<p class=\"navbar-text\">Currently logged in as: $login</p>";
-    print'</form><div><ul class="nav navbar-nav navbar-right">'; 
-    print '<li>';
-    print goBrowsePage();
-    print '</li>';
-    print'<li>';
-    print gologout();
-    print '</li>';
-    print '</ul></div></div></nav>';
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <form class="navbar-form navbar-left" role="search">
+                    <div class="form-group">
+                        <input type="text" name="search_term"  class="form-control" /> 
+                        <input type="submit" name="Search!" class="btn btn-default" />
+                    </div>
+                </form>
+                <ul class="nav navbar-nav">
+                    <li><a href='?page=$next'>Next!</a>
+                    <li><a href='?page=$previous'>Previous!</a>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="?browse_page=true">View All Profiles!</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    ~
 }
 
 sub browsePageContent { 
-    @people = glob ("$directory/*");
-    $j = min ($j + 8, $#people);
-    print '<div class="row"><div class="col-md-1">';
-    if ($j - 8 > 0) {
-    print goPreviousPage();
-    }
-    print '</div>';
-    print '<div class="col-md-10">';
+    print '<div class="row">';
     print '<div class="container">';
-    for ($i = $j - 8; $i < $j; $i++) { 
+    createPreview();
+    print '</div></div>';
+}
+
+
+sub createPreview { 
+    print $previous;
+     for ($i = $previous; $i < $pageNumber; $i++) { 
         print '<div class="col-md-3">';
         $person = getUsername($people[$i]);
         @text = getProfile ($person);
@@ -43,7 +48,7 @@ sub browsePageContent {
         foreach $l (@text) { 
            $count++; 
            if ($l =~ /^name:/) { 
-              $realName = $text[$count];
+                $realName = $text[$count];
            }
            if ($l =~ /^birthdate:/) { 
                 $age = $text[$count];
@@ -53,26 +58,20 @@ sub browsePageContent {
            }
         }
         if ($flag == 1 || !(defined $searchTerm)) { 
-            print getImage($person); 
-            print "<username>$person</username><br>";
-            print "<description>$realName, $age</description>";
-            print goProfilePage();
+            printProfile();
         }
         $flag = 0; 
         print '</div>';
-
     }
-    $j = $j - 8;
-    print '</div></div>';
-    print '<div class="col-md-1">';
-    if ($k < $#people) {
-    print goNextPage();
-    }
-    print '</div></div>';
-    print "<center>";
-    print "Showing profiles $j to $k<br><br>";
-    print "</center>";
+}
 
+sub printProfile { 
+    print getImage($person); 
+    print qq~
+    <username>$person</username><br>
+    <description>$realName, $age</description><br>
+    <a href="?profile_page=true&amp;view_person=$person">Go to Profile!</a>
+    ~;
 }
 
 1;

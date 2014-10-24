@@ -6,25 +6,19 @@
 # getProfile - gets profile in plain text from given username (AwesomeGirl40)
 # getUsername - gets username from directory (./students/AwesomeGirl40)
 
-
-#username 
-#email 
-#phone 
-#
-
 require "helper_functions.cgi";
 
 sub profilePage { 
 	$count = 0; 
 	print '<div class="row"><div class="container">';
+
     $name = "$person/profile.txt";
-	open $profile, "students/$name" or die;
+	open $profile, "students/$name" or die "Can't open";
 	$profile = join ('', <$profile>);
 	@text = split ("\n", $profile);
 	print '<div class="col-md-6">';
 	print '<h1>Interests</h1>';
 	foreach $line (@text) { 
-		$line =~ s/_/ /g;
 		if ($line =~ /^name:/) { 
 			$name = $text[$count + 1];
 		} elsif ($line =~ /^username:/) { 
