@@ -4,6 +4,7 @@ use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
 use Data::Dumper;  
 use List::Util qw/min max/;
 use CGI::Cookie;
+use Text::Diff;
 
 require "page_browse.cgi";
 require "page_profile.cgi";
@@ -46,7 +47,7 @@ print start_html (
     -title => "LOVE2041",
     -style => [
         { -src => "//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" },
-        { -src => "http://fonts.googleapis.com/c`ss?family=Oswald:400,700,300" },
+        { -src => "http://fonts.googleapis.com/css?family=Oswald:400,700,300" },
         { -src => "http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" },
         { -src => "css/custom.css" },
     ],
@@ -78,8 +79,7 @@ if (authenticate() && !$logout) {
         browsePageContent();
     } 
 } elsif (!authenticate()) { 
-    logoutPage();
-    print "<center>Wrong username or password!</center>";
+    logoutPage("Incorrect Username or Password!");
 }  else {
     logoutPage();
 }
@@ -87,14 +87,23 @@ if (authenticate() && !$logout) {
 print '</html>';
 
 sub logoutPage { 
-    print qq ~ 
+    print qq ~
     <center>
     <h5>LOVE2041</h5>
+    <div class="col-md-4 col-md-offset-4">
+    ~;
+    if (defined $_[0]) { 
+        print qq ~
+        $_[0]<br><br>
+        ~
+    }
+    print qq ~ 
     <form>
-        <input type="text" name="login">
-        <input type="password" name="password">
-        <input type="submit" class="btn btn-default">
+        <input type="text" placeholder="Username" name="login" class="form-control"><br>
+        <input type="password" placeholder="Password" name="password"  class="form-control"><br><br>
+        <input type="submit" value="Login!"  class="btn btn-default">
     </form>
+    </div>
     </center>
     ~
 }

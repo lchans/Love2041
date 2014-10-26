@@ -25,12 +25,18 @@ sub profilePage {
 			$hair = $text[$count + 1];
 		} elsif ($line =~ /^degree:/) {
 			$degree = $text [$count + 1];
+		} elsif ($line =~ /^weight:/) { 
+			$weight = $text [$count + 1];
+		} elsif ($line =~ /^hair/) { 
+			$hair = $text [$count + 1];
+		} elsif ($line =~ /^height:/) { 
+			$height = $text [$count + 1];
 		} elsif ($line =~ /:$/) {
 			$other .= "<b>$line</b><br>";
 		} elsif ($line ne $name && $line ne $username 
 			&& $line ne $password && $line ne email && 
 			$line ne $email && $line ne $birthdate && $line ne $gender &&
-			$line ne $hair) { 
+			$line ne $hair && $line ne $degree && line ne $hair && line ne $height) { 
 			$other .= "$line<br>";
 		}
 		$count++;
@@ -42,10 +48,10 @@ sub profilePage {
 			$interests .= "<b>$line"; 
 		} elsif ($line =~ /courses/) { 
 			$courses .= "<b>$line";
-		} else { 
-			$physical .= "$line";
 		}
 	}
+
+
 
 	print qq ~ 
 	<div class="container">
@@ -58,20 +64,19 @@ sub profilePage {
 				<b> Gender:</b>  $gender<br>
 				<b> Email: </b> $email<br>
 				<b> Birthdate:</b>  $birthdate <br>
-				<b> Degree: </b> $degree 
+				<b> Degree: </b> $degree <br><br>
+				<b> Weight: </b> $weight <br>
+				<b> Height: </b> $height <br>
+				<b> Hair Colour: </b> $hair <br> 
 		</div>
 		<div class="col-md-9">
 			<h2>More Info</h2>
 			<ul class="tabs">
-			<li class="tab-link current" data-tab="tab-1">Physical Traits</li>
-			<li class="tab-link" data-tab="tab-2">Interests</li>
+			<li class="tab-link current" data-tab="tab-2">Interests</li>
 			<li class="tab-link" data-tab="tab-3">Courses Undertaken</li>
 			</ul>
 
-			<div id="tab-1" class="tab-content current">
-			$physical
-			</div>
-			<div id="tab-2" class="tab-content">
+			<div id="tab-2" class="tab-content current">
 			$interests
 			</div>
 			<div id="tab-3" class="tab-content">
