@@ -4,7 +4,6 @@ use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
 use Data::Dumper;  
 use List::Util qw/min max/;
 use CGI::Cookie;
-use Text::Diff;
 
 require "page_browse.cgi";
 require "page_profile.cgi";
@@ -21,16 +20,31 @@ $viewPerson = param('view_person');
 $logout = param('logout_page');
 $myProfile = param('my_page');
 $matchPage = param('match_page');
+$registerPage = param('register_page');
+$completeReg = param('complete_registration');
 $pageNumber = param('page') || 0; 
 
+if (defined $logout) { 
+    $u = CGI::Cookie->new (
+        -expires => 'now',
+    );
+
+    $p = CGI::Cookie->new (
+        -expires => 'now',
+    );
+
+    print "Set-Cookie: $u\n";
+    print "Set-Cookie: $p\n";
+    print "Location: love2041.cgi\n\n";
+}
 
 if (defined $login && defined $password) {
-    my $u = CGI::Cookie->new (
+    $u = CGI::Cookie->new (
         -name => 'username',
         -value => $login,
     );
 
-    my $p = CGI::Cookie->new (
+    $p = CGI::Cookie->new (
         -name => 'password',
         -value => $password,
     );
@@ -38,7 +52,7 @@ if (defined $login && defined $password) {
      print "Set-Cookie: $u\n";
      print "Set-Cookie: $p\n";
      print "Location: love2041.cgi\n\n";
-}
+} 
 
 print "Content-type: text/html\n\n";
 
@@ -56,6 +70,8 @@ print start_html (
         { -src => 'js/custom.js' },
     ],
 );
+
+storeData();
 
 if (authenticate() && !$logout) { 
     if (defined $homePage) { 
@@ -78,9 +94,15 @@ if (authenticate() && !$logout) {
         browsePageHeader();
         browsePageContent();
     } 
+} elsif (defined $registerPage) { 
+    registerPage();
+} elsif (defined $completeReg) { 
+    completeReg();
 } elsif (!authenticate()) { 
     logoutPage("Incorrect Username or Password!");
-}  else {
+} elsif (defined $homePage) { 
+    loginPage();
+} else {
     logoutPage();
 }
 
@@ -98,38 +120,94 @@ sub logoutPage {
         ~
     }
     print qq ~ 
-    <form>
+    <form method="POST">
         <input type="text" placeholder="Username" name="login" class="form-control"><br>
-        <input type="password" placeholder="Password" name="password"  class="form-control"><br><br>
+        <input type="password" placeholder="Password" name="password"  class="form-control"><br>
         <input type="submit" value="Login!"  class="btn btn-default">
-    </form>
+    </form><br>
+    <a href="?register_page=true">Don't have an account? Register here!</a>
     </div>
     </center>
     ~
 }
 
-sub authenticate {
-    %cookies = CGI::Cookie->fetch;
-    $password = $cookies{'password'}->value;
-    $login = $cookies{'username'}->value;
-    @people = glob ("$directory/*");
+sub registerPage { 
+    $warning = "";
+    print qq ~ 
+    <div class="col-md-4 col-md-offset-4">
+    <form class="form-horizontal" action='' method="POST">
+
+        <label class="control-label" for="username">Username</label>
+        <input type="text" id="username" name="username" class="form-control">
+
+        <label class="control-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control">
+
+        <label class="control-label" for="email">Email</label>
+        <input type="text" id="email" name="email" class="form-control"><br>
+
+        <input type="submit" value="Register Now!" name="complete_registration"  class="btn btn-default">
+    </form><br>
+    </div>
+    ~;
+    return 1;
+}
+
+sub completeReg { 
+print qq ~ 
+    <form class="form-horizontal" action='' method="POST">
+    <input type="submit" value="Go back!" name="?logout_page=true" class="btn btn-default">
+    </form>
+~;
+}
+
+
+sub storeData { 
+@people = glob ("$directory/*");
+open (FILE, '>>username.txt');
     foreach $people (@people) { 
-        $person = getUsername($people);
-        if ($person eq $login) {
-            @text = getProfile(getUsername($people));
-            $count = 0; 
-            foreach $line (@text) { 
-                $count++; 
-                if ($line =~ /password:/) { 
-                    $pass = @text[$count]; 
-                    $pass =~ s/ //g;
-                    if ($pass == $password) { 
-                        return 1; 
-                    }
-                }
+        $user = getUsername($people);
+        $user =~ s/ //g;
+        @text = getProfile($user);
+        $count = 0; 
+        foreach $line (@text) { 
+            $count++; 
+            if ($line =~ /password:/) { 
+                $pass = @text[$count]; 
+                $pass =~ s/ //g;
+                print FILE "$user-$pass\n";
             }
         }
     }
+}
+
+
+sub authenticate {
+    %cookies = CGI::Cookie->fetch;
+    if (exists $cookies{'username'}) {
+        $password = $cookies{'password'}->value;
+        $login = $cookies{'username'}->value;
+        @people = glob ("$directory/*");
+        foreach $people (@people) { 
+            $person = getUsername($people);
+            if ($person eq $login) {
+                @text = getProfile(getUsername($people));
+                $count = 0; 
+                foreach $line (@text) { 
+                    $count++; 
+                    if ($line =~ /password:/) { 
+                        $pass = @text[$count]; 
+                        $pass =~ s/ //g;
+                        if ($pass == $password) { 
+                            return 1; 
+                        }
+                    }
+                }
+            }
+        } 
+
+    }
+
     return 0; 
 }
 
