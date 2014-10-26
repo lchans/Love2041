@@ -1,12 +1,10 @@
 #!/usr/bin/perl
 
-require "helper_functions.cgi";
-
 @people = glob ("$directory/*");
-$next = min($pageNumber + 8, $#people); 
-$previous = max(1, $pageNumber - 8); 
 
 sub browsePageHeader { 
+    $next = $pageNumber + 8; 
+    $previous = $pageNumber - 8; 
     print qq ~
     <nav class="navbar navbar-default" role="navigation">
         <div class="container-fluid">
@@ -20,9 +18,12 @@ sub browsePageHeader {
                 <ul class="nav navbar-nav">
                     <li><a href='?page=$next'>Next!</a>
                     <li><a href='?page=$previous'>Previous!</a>
+                    <li><p class="navbar-text">Currently logged in as: $login</p></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
+                <li><a href="?my_page=true">My Profile</a></li>
                     <li><a href="?browse_page=true">View All Profiles!</a></li>
+                     <li><a href="?logout_page=true">Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -31,6 +32,7 @@ sub browsePageHeader {
 }
 
 sub browsePageContent { 
+    @people = glob ("$directory/*");
     print '<div class="row">';
     print '<div class="container">';
     createPreview();
@@ -39,8 +41,8 @@ sub browsePageContent {
 
 
 sub createPreview { 
-    print $previous;
-     for ($i = $previous; $i < $pageNumber; $i++) { 
+    $pageNumber = min ($pageNumber + 8, $#people);
+     for ($i = $pageNumber - 8; $i < $pageNumber; $i++) { 
         print '<div class="col-md-3">';
         $person = getUsername($people[$i]);
         @text = getProfile ($person);
@@ -67,11 +69,11 @@ sub createPreview {
 
 sub printProfile { 
     print getImage($person); 
-    print qq~
+    print qq ~
     <username>$person</username><br>
     <description>$realName, $age</description><br>
-    <a href="?profile_page=true&amp;view_person=$person">Go to Profile!</a>
-    ~;
+    <a href="?profile_page=true&view_person=$person">Go to Profile!</a>
+    ~
 }
 
 1;

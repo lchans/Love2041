@@ -6,13 +6,10 @@
 # getProfile - gets profile in plain text from given username (AwesomeGirl40)
 # getUsername - gets username from directory (./students/AwesomeGirl40)
 
-require "helper_functions.cgi";
-
 sub profilePage { 
 	$count = 0; 
 	print '<div class="row"><div class="container">';
-
-    $name = "$person/profile.txt";
+    $name = "$_[0]/profile.txt";
 	open $profile, "students/$name" or die "Can't open";
 	$profile = join ('', <$profile>);
 	@text = split ("\n", $profile);
@@ -47,7 +44,7 @@ sub profilePage {
 
 	print '<div class="col-md-6">';
 	print '<h1>Profile</h1>';
-    print getImage($person);
+    print getImage($_[0]);
     print "<br>";
     print lineHeading ("Username: ", $username);
     print lineHeading ("Name: ", $name);
