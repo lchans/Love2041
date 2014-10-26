@@ -19,7 +19,8 @@ $registerPage = param('register_page');
 $viewPerson = param('view_person');
 $logout = param('logout_page');
 $myProfile = param('my_page');
-$pageNumber = param('page') || 1; 
+$matchPage = param('match_page');
+$pageNumber = param('page') || 0; 
 
 
 if (defined $login && defined $password) {
@@ -40,14 +41,19 @@ if (defined $login && defined $password) {
 
 print "Content-type: text/html\n\n";
 
+
 print start_html (
     -title => "LOVE2041",
     -style => [
         { -src => "//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" },
         { -src => "http://fonts.googleapis.com/c`ss?family=Oswald:400,700,300" },
         { -src => "http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" },
-        { -src => "custom.css" },
-    ]
+        { -src => "css/custom.css" },
+    ],
+    -script => [ 
+        { -src => '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js' },
+        { -src => 'js/custom.js' },
+    ],
 );
 
 if (authenticate() && !$logout) { 
@@ -65,6 +71,8 @@ if (authenticate() && !$logout) {
     } elsif (defined $myProfile) { 
         browsePageHeader();
         profilePage($login);
+    } elsif (defined $matchPage) { 
+        browsePageHeader();
     } else { 
         browsePageHeader();
         browsePageContent();
@@ -115,11 +123,6 @@ sub authenticate {
     }
     return 0; 
 }
-sub getImage { 
-    $person = $_[0]; 
-    $image = "<img width=\"200px\" src=\"students/$person/profile.jpg\">";
-    return $image; 
-}
 
 sub getUsername { 
     $person = $_[0]; 
@@ -136,10 +139,4 @@ sub getProfile {
     $profile = join ('', <$profile>);
     @text = split ("\n", $profile);
     return @text; 
-}
-
-sub lineHeading { 
-    $string = $_[0]; 
-    $description = $_[1]; 
-    return "<h4><b>$string</b> <i>$description</i></h4>";
 }
