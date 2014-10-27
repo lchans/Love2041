@@ -6,19 +6,20 @@ sub browsePageHeader {
     $next = min($pageNumber + 8, $#people); 
     $previous = max($pageNumber - 8, 0); 
     print qq ~
-    <nav class="navbar navbar-default" role="navigation">
+    <nav style="margin-bottom: 20px; padding: 10px" class="navbar-inverse" role="navigation">
         <div class="container-fluid">
+         <div class="navbar-header">
+         <h6>&#x2764TWOXFORONE</h6>
+         </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <form class="navbar-form navbar-left" role="search">
                     <div class="form-group">
-                        <input type="text" name="search_term"  class="form-control" /> 
-                        <input type="submit" name="Search!" class="btn btn-default" />
+                        <input type="text" name="search_term"  class="input-sm form-control" /> 
+                        <input type="submit" name="Search!" class=" btn-sm btn btn-default" />
                     </div>
                 </form>
                 <ul class="nav navbar-nav">
-
-                    <li><a href='?match_page=true'>Match me &#x2764</a>
-                    <li><p class="navbar-text">Currently logged in as: $login</p></li>
+                    <li><a href='?match_page=true'>MATCH ME &#x2764</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="?my_page=true">My Profile</a></li>
@@ -67,12 +68,14 @@ sub createPreview {
             print '</div>';
         }
     }
-    print qq ~
 
-        <center> <a href='?page=$previous'>Previous!</a>
-        ------
-        <a href='?page=$next'>Next!</a> </center>
-    ~;
+            print qq ~
+            <center> <a href='?page=$previous'>Previous!</a>
+            ------
+            <a href='?page=$next'>Next!</a> </center>
+            ~;
+
+
 }
 
 sub printProfile { 
@@ -80,7 +83,7 @@ sub printProfile {
     <img width="200px" src="students/$person/profile.jpg"><br>
     <username>$person</username><br>
     <description>$realName, $age</description><br>
-    <a href="?profile_page=true&view_person=$person">Go to Profile!</a><br><br><br>
+    <a href="?profile_page=true&view_person=$person">Go to Profile!</a><br>
     ~
 }
 
