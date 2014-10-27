@@ -4,6 +4,7 @@ use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
 use Data::Dumper;  
 use List::Util qw/min max/;
 use CGI::Cookie;
+ use POSIX;
 use DateTime;
 
 
@@ -135,13 +136,6 @@ sub matchPage {
         }
     }
 
-    print qq~
-    Your preferences are: <br>
-    Gender: $gender <br>
-    Height Range: $minHeight $maxHeight <br>
-    Age Range: $minAge $maxAge <br>
-    ~;
-
     @people = glob ("$directory/*");
     foreach $person (@people) { 
        $user =  getUsername($person);
@@ -151,7 +145,7 @@ sub matchPage {
        foreach $line (@text) {
             $count++; 
             if ($line =~ /gender:/ && $text[$count] =~ /^$gender/) { 
-                $score{$user} = $score{$user} + 3;
+                $score{$user} = $score{$user} + 50;
             } elsif ($line =~ /height:/) { 
                 if (($text[$count] > $minHeight) && ($text[$count] < $maxHeight)) { 
                     $score{$user}++;
@@ -159,10 +153,7 @@ sub matchPage {
             } elsif ($line =~ /birthdate:/) { 
                 $age = $text[$count];
                 $age = convertAge($age);
-                if (($age gt $minAge) && ($age lt $maxAge)) { 
-                    print $user;
-                    $score{$user}++;
-                }
+                $score{$user} = $score {$user} + 50 / ($age - $maxAge);
             }
        }
     }
@@ -172,7 +163,17 @@ sub matchPage {
 }
 
 
+sub printPage { 
+    print qq ~
+    <img width="200px" src="students/$person/profile.jpg"><br>
+    <username>$person</username><br>
+    <description>$user{name}, $user{birthdate}</description><br>
+    <a href="?profile_page=true&view_person=$person">Go to Profile!</a><br>
+    ~;
+}
+
 sub createMatch { 
+    print '<div class="container">';
     $pageNumber = min ($pageNumber + 8, $#people);
      for ($i = $pageNumber - 8; $i < $pageNumber; $i++) { 
         if (defined getUsername($people[$i])) { 
@@ -182,33 +183,38 @@ sub createMatch {
             $count = 0; 
             foreach $l (@text) { 
                $count++; 
-               if ($l =~ /^name:/) { 
-                    $realName = $text[$count];
-               }
-               if ($l =~ /^birthdate:/) { 
-                    $age = $text[$count];
-               } 
-               if ($l =~ /^height:/) { 
-                    $height = $text[$count];
-               }
-               if ($l =~ /^birthdate:/) { 
-                    $age = $text[$count];
-                    $age = convertAge($age);
+               if ($l =~ /^.+:/)  {
+                    $l =~ s/://g;
+                    $user{$l} = $text[$count];
                }
             }
-            printProfile();
-            print $gender;
+            printPage();
 
-            print "$minHeight $height $maxHeight<br>";
-            print "$minAge $age  $maxAge<br>";
-            print '</div>';
+            if ($score{$person} != 0) {
+                $percent = floor($score{$person} / $score{@people[0]} * 100);
+            } else { 
+            $percent = 0;
+            }
+            print qq ~
+            Compatability Score: \%  $percent<br><br>
+            </div>
+            ~;
         }
     }
     print qq ~ 
-    <center> <a href='?page=$previous&match_page=true&matched=true'>Previous!</a>
-    ------
-    <a href='?page=$next&match_page=true&matched=true'>Next!</a> </center>
+    <center>
+    <a href='?page=$next&match_page=true&matched=true'>
+    <span style="font-size:20px; color: #000000" class="glyphicon glyphicon-chevron-left">
+    </span>
+    </a>
+    <a href='?page=$next&match_page=true&matched=true'>
+    <span style="font-size:20px; color: #000000" class="glyphicon glyphicon-chevron-right">
+    </span>
+    </a>
+    </center>
+    <br><br>
     ~;
+    print '</div>';
 }
 
 sub convertAge { 
