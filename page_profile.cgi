@@ -8,6 +8,13 @@ sub profilePage {
 	$profile = join ('', <$profile>);
 	@text = split ("\n", $profile);
 
+	@images = glob ("$directory/$_[0]/*");
+	foreach $image (@images) { 
+		if ($image =~ /photo/) { 
+			$gallery{$_[0]} .= "<img style='padding: 10px' width=\"100px\" src=\"$image\">";
+		}
+	}
+
 	foreach $line (@text) { 
 		if ($line =~ /^name:/) { 
 			$name = $text[$count + 1];
@@ -77,6 +84,7 @@ sub profilePage {
 				<li class="tab-link" data-tab="tab-2">Bands</li>
 				<li class="tab-link" data-tab="tab-3">TV Shows</li>
 				<li class="tab-link" data-tab="tab-4">Courses Undertaken</li>
+				<li class="tab-link" data-tab="tab-5">Pictures</li>
 			</ul>
 
 			<div id="tab-100" class="tab-content current">
@@ -98,7 +106,9 @@ sub profilePage {
 			<div id="tab-4" class="tab-content">
 				$section{'<b>courses:</b>'}
 			</div>
-
+			<div id="tab-5" class="tab-content">
+				$gallery{$_[0]}
+			</div>
 
 
 		</div>
@@ -107,17 +117,5 @@ sub profilePage {
 	</div>
 	~; 
 }
-
-
-sub printPage { 
-    $age = convertAge($user{'birthdate'});
-    print qq ~
-    <img width="200px" src="students/$person/profile.jpg"><br>
-    <username>$person</username><br>
-    <description>$user{name}, $age</description><br>
-    <a href="?profile_page=true&view_person=$person">Go to Profile!</a><br>
-    ~;
-}
-
 
 1;

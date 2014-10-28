@@ -54,6 +54,7 @@ sub matchPage {
 }
 
 sub createMatch { 
+    print '<div class="container">';
     $pageNumber = min ($pageNumber + 8, $#people);
      for ($i = $pageNumber - 8; $i < $pageNumber; $i++) { 
         if (defined getUsername($people[$i])) { 
@@ -72,6 +73,7 @@ sub createMatch {
         }
     }
     matchFooter();
+    print '</div>';
 }
 
 
@@ -83,7 +85,7 @@ sub printPage {
         <username>$person</username><br>
         <description>$user{name}, $age</description><br>
         <a href="?profile_page=true&view_person=$person">Go to Profile!</a><br>
-        Compatability Score: \%  $percent<br>
+        Compatability Score: \% $percent<br>
         </div>
     ~;
 }

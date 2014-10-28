@@ -36,9 +36,31 @@ sub editProfile {
 }
 
 sub addText { 
-    open $profile, ">>", "students/$login/profile.txt" or die;
-    print $profile "\nprofile_text:\n";
-    print $profile "\t$edited";
+    open $profile, "students\/$login\/profile.txt" or die;
+    @text = split("\n", $profile);
+    $textFlag = 0; 
+    foreach $line (@text) { 
+        if ($line =~ /profile_text:/) { 
+            $textFlag = 1;
+        }
+    }
+
+    if ($textFlag) { 
+        open $profile, ">", "students\/$login\/profile.txt" or die;
+        @text = split("\n", $profile);
+        @text[$#text] = "\t$edited";
+        foreach $line (@text) { 
+            if ($line =~ /:/) { 
+                print $profile "$line\n";
+            } else { 
+                print $profile "\t$line\n";
+            }
+        }
+    } else { 
+        open $profile, ">>", "students\/$login\/profile.txt" or die;
+        print $profile "\nprofile_text:\n";
+        print $profile "\t$edited";
+    }
 }
 
 1;
