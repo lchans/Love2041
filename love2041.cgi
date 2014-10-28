@@ -7,14 +7,16 @@ use CGI::Cookie;
  use POSIX;
 use DateTime;
 
-
 require "page_browse.cgi";
 require "page_profile.cgi";
+require "page_register.cgi";
+require "page_dashboard.cgi";
+require "page_home.cgi";
+require "page_match.cgi";
 
 $login = param('login');
 $password = param('password');
 $directory = "./students";
-$homePage = param('home_page'); 
 $browsePage = param('browse_page'); 
 $profilePage = param('profile_page');
 $searchTerm = param('search_term');
@@ -22,10 +24,14 @@ $registerPage = param('register_page');
 $viewPerson = param('view_person');
 $logout = param('logout_page');
 $myProfile = param('my_page');
+$myEdit = param('edit_page');
 $matchPage = param('match_page');
+$dashboardPage = param('my_dashboard');
 $registerPage = param('register_page');
 $completeReg = param('complete_registration');
 $pageNumber = param('page') || 0; 
+$edited = param('edited');
+$textPage = param('add_text');
 
 if (defined $logout) { 
     $u = CGI::Cookie->new (
@@ -35,7 +41,7 @@ if (defined $logout) {
     );
 
     $p = CGI::Cookie->new (
-                -name => 'password',
+        -name => 'password',
         -value => $password,
         -expires => 'now',
     );
@@ -84,12 +90,19 @@ if (authenticate() && !$logout) {
     if (defined $browsePage || defined $searchTerm) { 
         browsePageHeader();
         browsePageContent();
+    } elsif (defined $dashboardPage) { 
+        browsePageHeader();
+        dashboard();
     } elsif (defined $profilePage) { 
         browsePageHeader();
         profilePage($viewPerson);
+
     } elsif (defined $myProfile) { 
         browsePageHeader();
         profilePage($login);
+    } elsif (defined $myEdit) { 
+        browsePageHeader();
+        editProfile(); 
     } elsif (defined $matchPage) { 
         browsePageHeader();
         if (defined $matched) { 
@@ -97,6 +110,10 @@ if (authenticate() && !$logout) {
         } else { 
             matchPage();
         }
+    } elsif (defined $textPage) { 
+        browsePageHeader();
+        addText();
+        dashboard();
     } else { 
         browsePageHeader();
         browsePageContent();
@@ -104,118 +121,14 @@ if (authenticate() && !$logout) {
 } elsif (defined $registerPage) { 
     registerPage();
 } elsif (defined $completeReg) { 
-    completeReg();
-} elsif (!authenticate()) { 
-    logoutPage("Incorrect Username or Password!");
+    if (authRegistration()) { 
+        confirmRegistration();
+    } 
 } else {
-    logoutPage();
+    homePage();
 }
 
 print '</html>';
-
-
-sub matchPage { 
-    @text = getPreferences ($login);
-    $count = 0; 
-    #gets the preferences of each line:
-    foreach $line (@text) { 
-        $count++; 
-        if ($line =~ /gender:/) { 
-            $gender = $text[$count];
-        } 
-        if ($line =~ /min:/ && $text[$count] =~ /m/) { 
-            $minHeight = $text[$count];
-        } elsif ($line =~ /min:/) { 
-            $minAge = $text[$count];
-        }
-
-        if ($line =~ /max:/ && $text[$count] =~ /m/) { 
-            $maxHeight = $text[$count];
-        } elsif ($line =~ /max:/) { 
-            $maxAge = $text[$count];
-        }
-    }
-
-    @people = glob ("$directory/*");
-    foreach $person (@people) { 
-       $user =  getUsername($person);
-       $score{$user} = 0;
-       @text = getProfile($user);
-       $count = 0; 
-       foreach $line (@text) {
-            $count++; 
-            if ($line =~ /gender:/ && $text[$count] =~ /^$gender/) { 
-                $score{$user} = $score{$user} + 50;
-            } elsif ($line =~ /height:/) { 
-                if (($text[$count] > $minHeight) && ($text[$count] < $maxHeight)) { 
-                    $score{$user}++;
-                }
-            } elsif ($line =~ /birthdate:/) { 
-                $age = $text[$count];
-                $age = convertAge($age);
-                $score{$user} = $score {$user} + 50 / ($age - $maxAge);
-            }
-       }
-    }
-    @sorted = sort { $score{$b} cmp $score{$a} } keys %score; 
-    @people = @sorted; 
-    createMatch();
-}
-
-
-sub printPage { 
-    print qq ~
-    <img width="200px" src="students/$person/profile.jpg"><br>
-    <username>$person</username><br>
-    <description>$user{name}, $user{birthdate}</description><br>
-    <a href="?profile_page=true&view_person=$person">Go to Profile!</a><br>
-    ~;
-}
-
-sub createMatch { 
-    print '<div class="container">';
-    $pageNumber = min ($pageNumber + 8, $#people);
-     for ($i = $pageNumber - 8; $i < $pageNumber; $i++) { 
-        if (defined getUsername($people[$i])) { 
-            print '<div class="col-md-3">';
-            $person = getUsername($people[$i]);
-            @text = getProfile ($person);
-            $count = 0; 
-            foreach $l (@text) { 
-               $count++; 
-               if ($l =~ /^.+:/)  {
-                    $l =~ s/://g;
-                    $user{$l} = $text[$count];
-               }
-            }
-            printPage();
-
-            if ($score{$person} != 0) {
-                $percent = floor($score{$person} / $score{@people[0]} * 100);
-            } else { 
-            $percent = 0;
-            }
-            print qq ~
-            Compatability Score: \%  $percent<br><br>
-            </div>
-            ~;
-        }
-    }
-    print qq ~ 
-    <center>
-    <a href='?page=$next&match_page=true&matched=true'>
-    <span style="font-size:20px; color: #000000" class="glyphicon glyphicon-chevron-left">
-    </span>
-    </a>
-    <a href='?page=$next&match_page=true&matched=true'>
-    <span style="font-size:20px; color: #000000" class="glyphicon glyphicon-chevron-right">
-    </span>
-    </a>
-    </center>
-    <br><br>
-    ~;
-    print '</div>';
-}
 
 sub convertAge { 
     $birth = $_[0];
@@ -227,90 +140,31 @@ sub convertAge {
     return $age;
 }
 
-
-
-sub logoutPage { 
-    print qq ~
-    <div class="container contain">
-    <center>
-    <h5>&#x2764TWOXFORONE</h5>
-        <div class="col-md-4 col-md-offset-4">
-        ~;
-        if (defined $_[0]) { 
-            print qq ~
-            $_[0]<br><br>
-            ~
-        }
-        print qq ~ 
-        <form method="POST">
-            <input type="text" placeholder="Username" name="login" class="form-control"><br>
-            <input type="password" placeholder="Password" name="password"  class="form-control"><br>
-            <input type="submit" value="Login!"  class="btn btn-default">
-        </form><br>
-        <a href="?register_page=true">Don't have an account? Register here!</a>
-        </div>
-    </center>
-    </div>
-    ~;
-}
-
-sub registerPage { 
-    $warning = "";
-    print qq ~ 
-    <div class="col-md-4 col-md-offset-4">
-    <form class="form-horizontal" action='' method="POST">
-
-        <label class="control-label" for="username">Username</label>
-        <input type="text" id="username" name="username" class="form-control">
-
-        <label class="control-label" for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control">
-
-        <label class="control-label" for="email">Email</label>
-        <input type="text" id="email" name="email" class="form-control"><br>
-
-        <input type="submit" value="Register Now!" name="complete_registration"  class="btn btn-default">
-    </form><br>
-    </div>
-    ~;
-    return 1;
-}
-
-sub completeReg { 
-print qq ~ 
-    <form class="form-horizontal" action='' method="POST">
-    <input type="submit" value="Go back!" name="?logout_page=true" class="btn btn-default">
-    </form>
-~;
-}
-
-
 sub storeData { 
-@people = glob ("$directory/*");
-open (FILE, '>username.txt');
-foreach $people (@people) { 
-    $user = getUsername($people);
-    $user =~ s/ //g;
-    @text = getProfile($user);
-    $count = 0; 
-    foreach $line (@text) { 
-        $count++; 
-        if ($line =~ /password:/) { 
-            $pass = @text[$count]; 
-            $pass =~ s/ +//g;
-            print FILE "$user $pass\n";
+    @people = glob ("$directory/*");
+    open (FILE, '>username.txt');
+    foreach $people (@people) { 
+        $user = getUsername($people);
+        $user =~ s/ //g;
+        @text = getProfile($user);
+        $count = 0; 
+        foreach $line (@text) { 
+            $count++; 
+            if ($line =~ /password:/) { 
+                $pass = @text[$count]; 
+                $pass =~ s/ +//g;
+                print FILE "$user $pass\n";
+            }
         }
     }
 }
-}
-
 
 sub authenticate {
+    @people = glob ("$directory/*");
     %cookies = CGI::Cookie->fetch;
     if (exists $cookies{'username'}) {
         $password = $cookies{'password'}->value;
         $login = $cookies{'username'}->value;
-        @people = glob ("$directory/*");
         foreach $people (@people) { 
             $person = getUsername($people);
             if ($person eq $login) {
@@ -320,17 +174,12 @@ sub authenticate {
                     $count++; 
                     if ($line =~ /password:/) { 
                         $pass = @text[$count]; 
-                        $pass =~ s/ //g;
-                        if ($pass == $password) { 
-                            return 1; 
-                        }
+                        return ($pass == $password);
                     }
                 }
             }
         } 
-
     }
-
     return 0; 
 }
 

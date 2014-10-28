@@ -68,3 +68,5 @@ degree:
 	Information Technology
 name:
 	Azra Akin
+profile_text:
+	I love long walks on the beach

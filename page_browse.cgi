@@ -2,9 +2,8 @@
 
 @people = glob ("$directory/*");
 
+
 sub browsePageHeader { 
-    $next = min($pageNumber + 8, $#people); 
-    $previous = max($pageNumber - 8, 0); 
     print qq ~
     <nav style="margin-bottom: 20px; padding: 10px" class="navbar-inverse" role="navigation">
         <div class="container-fluid">
@@ -22,7 +21,7 @@ sub browsePageHeader {
                     <li><a href='?match_page=true'>MATCH ME &#x2764</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="?my_page=true">My Profile</a></li>
+                    <li><a href="?my_dashboard=true">My Dashboard</a></li>
                     <li><a href="?browse_page=true">View All Profiles!</a></li>
                     <li><a href="?logout_page=true">Logout</a></li>
                 </ul>
@@ -33,19 +32,23 @@ sub browsePageHeader {
 }
 
 sub browsePageContent { 
+    $next = min($pageNumber + 8, $#people); 
+    $previous = max($pageNumber - 8, 0); 
     @people = glob ("$directory/*");
     print '<div class="row">';
     print '<div class="container">';
     createPreview();
-    print '</div></div>';
+    print '</div>';
+    print '</div>';
+    navigateFooter();
 }
 
 
 sub createPreview { 
     $pageNumber = min ($pageNumber + 8, $#people);
+    print $pageNumber;
      for ($i = $pageNumber - 8; $i < $pageNumber; $i++) { 
         if (defined getUsername($people[$i])) { 
-            print '<div class="col-md-3">';
             $person = getUsername($people[$i]);
             @text = getProfile ($person);
             $count = 0; 
@@ -61,30 +64,45 @@ sub createPreview {
                     $flag = 1; 
                }
             }
-            if ($flag == 1 || !(defined $searchTerm)) { 
-                printProfile();
+            if ($flag == 1 || !(defined $searchTerm)) {      
+                previewSection();
             }
             $flag = 0; 
-            print '</div>';
+
+        } else { 
+            print 'Not Found!';
         }
     }
-
-            print qq ~
-            <center> <a href='?page=$previous'>Previous!</a>
-            ------
-            <a href='?page=$next'>Next!</a> </center>
-            ~;
-
-
 }
 
-sub printProfile { 
+
+
+sub previewSection { 
     print qq ~
+    <div class="col-md-3">
     <img width="200px" src="students/$person/profile.jpg"><br>
     <username>$person</username><br>
     <description>$realName, $age</description><br>
     <a href="?profile_page=true&view_person=$person">Go to Profile!</a><br>
+    </div>
     ~
+}
+
+sub navigateFooter { 
+    print qq ~ 
+    <div class="row">
+    <center>
+    <a href='?page=$previous'>
+    <span style="font-size:20px; color: #000000" class="glyphicon glyphicon-chevron-left">
+    </span>
+    </a>
+    <a href='?page=$next'>
+    <span style="font-size:20px; color: #000000" class="glyphicon glyphicon-chevron-right">
+    </span>
+    </a>
+    </center>
+    </div>
+    ~;
 }
 
 1;

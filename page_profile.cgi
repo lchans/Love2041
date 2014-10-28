@@ -36,23 +36,21 @@ sub profilePage {
 		} elsif ($line ne $name && $line ne $username 
 			&& $line ne $password && $line ne email && 
 			$line ne $email && $line ne $birthdate && $line ne $gender &&
-			$line ne $hair && $line ne $degree && line ne $hair && line ne $height) { 
+			$line ne $hair && $line ne $degree && line ne $hair && line ne $height && 
+			$line ne $weight) { 
 			$other .= "$line<br>";
 		}
 		$count++;
 	}
 
-	@sub = split ("<b>", $other);
+	@sub = split ("<br>", $other);
 	foreach $line (@sub) { 
-		if ($line =~ /favourite/) { 
-			$interests .= "<b>$line"; 
-		} elsif ($line =~ /courses/) { 
-			$courses .= "<b>$line";
+		if ($line =~ /:/) { 
+			$header = $line; 
+		} else {
+			$section{$header} .= "$line<br>"; 
 		}
 	}
-
-
-
 
 	print qq ~ 
 	<div class="container">
@@ -73,21 +71,53 @@ sub profilePage {
 		<div class="col-md-9">
 			<h2>More Info</h2>
 			<ul class="tabs">
-			<li class="tab-link current" data-tab="tab-2">Interests</li>
-			<li class="tab-link" data-tab="tab-3">Courses Undertaken</li>
+				<li class="tab-link current" data-tab="tab-100">Overview</li>
+				<li class="tab-link " data-tab="tab-0">Hobbies</li>
+				<li class="tab-link" data-tab="tab-1">Movies</li>
+				<li class="tab-link" data-tab="tab-2">Bands</li>
+				<li class="tab-link" data-tab="tab-3">TV Shows</li>
+				<li class="tab-link" data-tab="tab-4">Courses Undertaken</li>
 			</ul>
 
-			<div id="tab-2" class="tab-content current">
-			$interests
+			<div id="tab-100" class="tab-content current">
+				$section{'<b>profile_text:</b>'}
+			</div>
+
+			<div id="tab-0" class="tab-content">
+				$section{'<b>favourite_hobbies:</b>'}
+			</div>
+			<div id="tab-1" class="tab-content">
+				$section{'<b>favourite_movies:</b>'}
+			</div>
+			<div id="tab-2" class="tab-content">
+				$section{'<b>favourite_bands:</b>'}
 			</div>
 			<div id="tab-3" class="tab-content">
-			$courses
+				$section{'<b>favourite_TV_shows:</b>'}
 			</div>
+			<div id="tab-4" class="tab-content">
+				$section{'<b>courses:</b>'}
+			</div>
+
+
+
 		</div>
 		</div>
 	</div>
 	</div>
 	~; 
 }
+
+
+sub printPage { 
+    $age = convertAge($user{'birthdate'});
+    print qq ~
+    <img width="200px" src="students/$person/profile.jpg"><br>
+    <username>$person</username><br>
+    <description>$user{name}, $age</description><br>
+    <a href="?profile_page=true&view_person=$person">Go to Profile!</a><br>
+    ~;
+}
+
 
 1;
