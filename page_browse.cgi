@@ -37,21 +37,44 @@ sub browsePageContent {
     @people = glob ("$directory/*");
     print '<div class="row">';
     print '<div class="container">';
-    createPreview();
+    if (defined $searchTerm) {
+        createSearchPreview();
+    } else { 
+        createPreview();
+    }
     print '</div>';
     print '</div>';
-    navigateFooter();
+    if (defined $searchTerm) { 
+        navigateSearchFooter();
+    } else { 
+        navigateFooter(); 
+    }
+
 }
 
+sub createSearchPreview { 
+    @people = glob ("$directory/*");
+    @matched = ();
+    foreach $person (@people) { 
+        if (defined getUsername($person)) { 
+            $person = getUsername($person);
+            @text = getProfile ($person);
+            foreach $line (@text) { 
+                if ($line =~ /$searchTerm/i) { 
+                    push (@matched, $person);
+                }
+            }
+        }
+    }
 
-sub createPreview { 
+
     $pageNumber = min ($pageNumber + 8, $#people);
-    print $pageNumber;
-     for ($i = $pageNumber - 8; $i < $pageNumber; $i++) { 
-        if (defined getUsername($people[$i])) { 
-            $person = getUsername($people[$i]);
+    for ($i = $pageNumber - 8; $i < $pageNumber; $i++) { 
+        if (defined getUsername($matched[$i])) { 
+            $person = getUsername($matched[$i]);
             @text = getProfile ($person);
             $count = 0; 
+            $flag = 0; 
             foreach $l (@text) { 
                $count++; 
                if ($l =~ /^name:/) { 
@@ -60,18 +83,35 @@ sub createPreview {
                if ($l =~ /^birthdate:/) { 
                     $age = $text[$count];
                }
-               if ($l =~ /$searchTerm/i) { 
-                    $flag = 1; 
+            }
+            previewSection();
+        } 
+    }
+
+}
+
+
+sub createPreview { 
+    @people = glob ("$directory/*");
+    $pageNumber = min ($pageNumber + 8, $#people);
+     for ($i = $pageNumber - 8; $i < $pageNumber; $i++) { 
+        print $i;
+        if (defined getUsername($people[$i])) { 
+            $person = getUsername($people[$i]);
+            @text = getProfile ($person);
+            $count = 0; 
+            $flag = 0; 
+            foreach $l (@text) { 
+               $count++; 
+               if ($l =~ /^name:/) { 
+                    $realName = $text[$count];
+               }
+               if ($l =~ /^birthdate:/) { 
+                    $age = $text[$count];
                }
             }
-            if ($flag == 1 || !(defined $searchTerm)) {      
-                previewSection();
-            }
-            $flag = 0; 
-
-        } else { 
-            print 'Not Found!';
-        }
+            previewSection();
+        } 
     }
 }
 
@@ -104,5 +144,24 @@ sub navigateFooter {
     </div>
     ~;
 }
+
+sub navigateSearchFooter { 
+    print qq ~ 
+    <div class="row">
+    <center>
+    <a href='?page=$previous&search_term=$searchTerm'>
+    <span style="font-size:20px; color: #000000" class="glyphicon glyphicon-chevron-left">
+    </span>
+    </a>
+    <a href='?page=$next&search_term=$searchTerm'>
+    <span style="font-size:20px; color: #000000" class="glyphicon glyphicon-chevron-right">
+    </span>
+    </a>
+    </center>
+    </div>
+    ~;
+}
+
+
 
 1;

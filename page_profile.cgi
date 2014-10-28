@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+
 sub profilePage { 
 
 	$count = 0; 
@@ -58,7 +59,12 @@ sub profilePage {
 			$section{$header} .= "$line<br>"; 
 		}
 	}
+	return %section;
+}
 
+sub printProfile {
+
+	%section = profilePage($_[0]);
 	print qq ~ 
 	<div class="container">
 	<div class="row"> 
@@ -116,6 +122,7 @@ sub profilePage {
 	</div>
 	</div>
 	~; 
+
 }
 
 1;

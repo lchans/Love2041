@@ -4,7 +4,8 @@ use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
 use Data::Dumper;  
 use List::Util qw/min max/;
 use CGI::Cookie;
- use POSIX;
+
+use POSIX;
 use DateTime;
 
 require "page_browse.cgi";
@@ -13,6 +14,8 @@ require "page_register.cgi";
 require "page_dashboard.cgi";
 require "page_home.cgi";
 require "page_match.cgi";
+
+
 
 $login = param('login');
 $password = param('password');
@@ -95,11 +98,10 @@ if (authenticate() && !$logout) {
         dashboard();
     } elsif (defined $profilePage) { 
         browsePageHeader();
-        profilePage($viewPerson);
-
+        printProfile($viewPerson);
     } elsif (defined $myProfile) { 
         browsePageHeader();
-        profilePage($login);
+        printProfile($login);
     } elsif (defined $myEdit) { 
         browsePageHeader();
         editProfile(); 
@@ -116,7 +118,8 @@ if (authenticate() && !$logout) {
         dashboard();
     } else { 
         browsePageHeader();
-        browsePageContent();
+        dashboard();
+
     } 
 } elsif (defined $registerPage) { 
     registerPage();

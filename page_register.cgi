@@ -30,9 +30,8 @@ sub registerPage {
 }
 
 sub authRegistration { 
-	print '<div class="row">';
 	if (param('username') eq "") { 
-		print "Please enter a username!</div>";
+		print "Please enter a username!";
 		registerPage();
 		return 0;
 	} elsif (param('password') ne param('passwordCheck')) { 
@@ -48,16 +47,60 @@ sub authRegistration {
 		registerPage();
 		return 0;
 	} 
-	print '</div>';
 	return 1; 
 }
 
 sub confirmRegistration { 
-print qq ~ 
-    <form class="form-horizontal" action='' method="POST">
-    <input type="submit" value="Go back!" name="?logout_page=true" class="btn btn-default">
-    </form>
-~;
+
+	$username = param('username');
+	$email = param('email');
+
+	#makeProfile ($username);
+
+	$activate{$username} = crypt ($username, 'lc');
+
+	$message = "$username, this e-mail is here to confirm your registration for TWOXFORONE\n
+				Please click the link below to activate your account:\n
+				cgi.cse.unsw.edu.au/~lchan/love2041/love2041.cgi?$activate{$username}";
+
+  	send_email('administrator@twoxforone.com',
+             $email,
+             'Confirm you account for TWOXFORONE',
+             $message);
+
+	print qq ~ 
+		<center> A confirmation e-mail has been sent to $email.<br>
+		Please click on the link to activate your account!
+
+	    <form class="form-horizontal" action='' method="POST">
+	    <input type="submit" value="Go back!" name="?logout_page=true" class="btn btn-default">
+	    </form>
+	    </center>
+	~;
 }
+
+sub makeProfile { 
+	$dir = "students/$_[0]";
+	mkdir($dir);
+	open my $file, ">>students/$_[0]/preferences.txt";
+	print $file "default";
+	close $file;
+	open my $file,">>students/$_[0]/profile.txt";
+	print $file "default";
+	close $file;
+}
+
+sub send_email {
+    my ($sender, $receiver, $subject, $message_content) = @_;
+    open(MAIL, "|/usr/lib/sendmail -oi -t");
+    print MAIL "From: $sender\n";
+    print MAIL "To: $receiver\n";
+    print MAIL "Subject: $subject\n\n";
+    print MAIL "$message_content\n";
+    close(MAIL);
+}
+
+
+
 
 1;

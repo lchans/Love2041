@@ -15,10 +15,22 @@ sub matchPage {
             $minAge = $text[$count];
         }
 
+        if ($line =~ /min:/ && $text[$count] =~ /kg/) { 
+            $minWeight = $text[$count];
+            $minWeight =~ s/kg//g;
+        } elsif ($line =~ /max:/ && $text[$count] =~ /kg/) {
+            $maxWeight = $text[$count]; 
+            $maxWeight =~ s/kg//g;
+        }
+
         if ($line =~ /max:/ && $text[$count] =~ /m/) { 
             $maxHeight = $text[$count];
         } elsif ($line =~ /max:/) { 
             $maxAge = $text[$count];
+        } 
+
+        if ($line =~ /hair_colours:/) { 
+            $hair = $text[$count];
         }
     }
 
@@ -36,6 +48,12 @@ sub matchPage {
                 if (($text[$count] > $minHeight) && ($text[$count] < $maxHeight)) { 
                     $score{$user} = $score{$user} + 10;
                 }
+            } elsif ($line =~ /weight:/) { 
+                $weight = $text[$count];
+                $weight =~ s/kg//g;
+                if (($weight > $minWeight) && ($weight < $maxWeight)) { 
+                    $score{$user} = $score{$user} + 10;
+                }
             } elsif ($line =~ /birthdate:/) { 
                     $age = convertAge($text[$count]);
                 if (($age > $minAge) && ($age < $maxAge)) { 
@@ -45,7 +63,11 @@ sub matchPage {
                 } elsif (abs($age - $minAge) < 20 || abs($age - $maxAge) < 20) { 
                     $score{$user} = $score{$user} + 10;
                 }
-            }
+            } elsif ($line =~ /hair_colour:/) {
+                if ($text[$count] =~ /$hair/) { 
+                    $score{$user} = $score{$user} + 10;
+                }
+            } 
        }
     }
     @sorted = sort { $score{$b} cmp $score{$a} } keys %score; 
@@ -69,7 +91,8 @@ sub createMatch {
                }
             }
             printPage();
-            $percent = floor($score{$person} / $score{@people[0]} * 100) || 0;
+            $percent = floor($score{$person} / $score{@people[0]}) || 0;
+            $percent = $percent * 100;
         }
     }
     matchFooter();

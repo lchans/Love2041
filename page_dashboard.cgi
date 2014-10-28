@@ -22,12 +22,18 @@ sub dashboard {
 }
 
 sub editProfile { 
+    open $profile, "students\/$login\/profile.txt" or die;
+    @text = split("\n", $profile);
+    $text = @text[$#text];
+    $text =~ s/\t//g;
     print qq~
     <div class="container">
     <div class="col-md-8 col-md-offset-2">
     <form role="form">
-    <textarea class="form-control" name='edited'></textarea>
-    <input type="submit" value="Change text!" name="add_text" class="btn btn-default">
+    <label>Profile text:</label>
+    <textarea class="form-control" value="$text" name='edited'>$text</textarea><br>
+    <input type="submit" value="Change text!" name="add_text" class="btn btn-default btn-sm">
+    
     </input>
     </form>
     </div>
