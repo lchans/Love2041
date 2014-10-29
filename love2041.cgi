@@ -34,7 +34,7 @@ $registerPage = param('register_page');
 $completeReg = param('complete_registration');
 $pageNumber = param('page') || 0; 
 $edited = param('edited');
-$textPage = param('add_text');
+$changeText = param('change_text');
 
 if (defined $logout) { 
     $u = CGI::Cookie->new (
@@ -112,9 +112,9 @@ if (authenticate() && !$logout) {
         } else { 
             matchPage();
         }
-    } elsif (defined $textPage) { 
+    } elsif (defined $changeText) { 
         browsePageHeader();
-        addText();
+        changeProfile();
         dashboard();
     } else { 
         browsePageHeader();

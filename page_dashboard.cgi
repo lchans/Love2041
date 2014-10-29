@@ -22,51 +22,57 @@ sub dashboard {
 }
 
 sub editProfile { 
-    open $profile, "students\/$login\/profile.txt" or die;
-    @text = split("\n", $profile);
-    $text = @text[$#text];
-    $text =~ s/\t//g;
+    %s = getHash();
+    @hashKey = keys %s; 
     print qq~
     <div class="container">
     <div class="col-md-8 col-md-offset-2">
-    <form role="form">
-    <label>Profile text:</label>
-    <textarea class="form-control" value="$text" name='edited'>$text</textarea><br>
-    <input type="submit" value="Change text!" name="add_text" class="btn btn-default btn-sm">
-    
-    </input>
+    <form role="form" method="POST">~; 
+    foreach $keys (@hashKey) { 
+        print qq ~
+        <label>$keys</label>
+        <textarea class="form-control" value="$keys" name="$keys">
+        $s{$keys}
+        </textarea><br>
+        </input><br>
+        ~;
+    }
+    print qq~
+    <input type="submit" value="Change text!" name="change_text" class="btn btn-default btn-sm">
     </form>
     </div>
     </div>
     ~;
 }
 
-sub addText { 
-    open $profile, "students\/$login\/profile.txt" or die;
-    @text = split("\n", $profile);
-    $textFlag = 0; 
-    foreach $line (@text) { 
-        if ($line =~ /profile_text:/) { 
-            $textFlag = 1;
-        }
+sub changeProfile { 
+    open $profile, ">", "students\/$login\/profile.txt" or die;
+    @profile = split("\n", $profile);
+    foreach $line (@profile) { 
+        if ($line =~ /:/) { 
+            $tabs{$line} = "";
+        } 
     }
+    @keys = keys %tabs; 
+    foreach $key (@keys) { 
+        print $profile $key, "\n"; 
+        print $profile param("$key"), "\n";
+    }
+}
 
-    if ($textFlag) { 
-        open $profile, ">", "students\/$login\/profile.txt" or die;
-        @text = split("\n", $profile);
-        @text[$#text] = "\t$edited";
-        foreach $line (@text) { 
-            if ($line =~ /:/) { 
-                print $profile "$line\n";
-            } else { 
-                print $profile "\t$line\n";
-            }
+sub getHash { 
+    open $profile, "<", "students\/$login\/profile.txt" or die;
+    @sub =  split ("\n", $profile);
+    foreach $line (@sub) { 
+        if ($line =~ /:/) { 
+            $header = $line;
+            $tabs{$header} = ""; 
+        } else {
+            $tabs{$header} .= "$line\n"; 
+
         }
-    } else { 
-        open $profile, ">>", "students\/$login\/profile.txt" or die;
-        print $profile "\nprofile_text:\n";
-        print $profile "\t$edited";
     }
+    return %tabs;
 }
 
 1;

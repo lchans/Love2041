@@ -55,7 +55,7 @@ sub confirmRegistration {
 	$username = param('username');
 	$email = param('email');
 
-	#makeProfile ($username);
+	makeProfile ($username);
 
 	$activate{$username} = crypt ($username, 'lc');
 
@@ -82,12 +82,23 @@ sub confirmRegistration {
 sub makeProfile { 
 	$dir = "students/$_[0]";
 	mkdir($dir);
-	open my $file, ">>students/$_[0]/preferences.txt";
-	print $file "default";
+	open my $file, ">>$dir/preferences.txt";
+	print $file createProfile();
 	close $file;
-	open my $file,">>students/$_[0]/profile.txt";
-	print $file "default";
+	open my $file,">>$dir/profile.txt";
+	print $file createProfile();
 	close $file;
+}
+
+sub createProfile { 
+return qq ~ 
+username:
+	$username
+password: 
+	$password
+email: 
+	$email
+~;
 }
 
 sub send_email {
