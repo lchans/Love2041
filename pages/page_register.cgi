@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+
 sub registerPage { 
     $warning = "";
     print qq ~ 
@@ -87,6 +88,7 @@ sub makeProfile {
 	close $file;
 	open my $file,">>$dir/profile.txt";
 	print $file createProfile();
+	copy('profile.jpg', "$dir/") or die;
 	close $file;
 }
 

@@ -89,10 +89,11 @@ sub createMatch {
                     $l =~ s/://g;
                     $user{$l} = $text[$count];
                }
-            }
-            printPage();
+            }           
             $percent = floor($score{$person} / $score{@people[0]}) || 0;
-            $percent = $percent * 100;
+            $percent = $score{$person};
+            printPage();
+ 
         }
     }
     matchFooter();

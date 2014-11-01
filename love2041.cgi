@@ -4,18 +4,18 @@ use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
 use Data::Dumper;  
 use List::Util qw/min max/;
 use CGI::Cookie;
-
+use File::Path;
+use File::Copy;
 use POSIX;
 use DateTime;
 
-require "page_browse.cgi";
-require "page_profile.cgi";
-require "page_register.cgi";
-require "page_dashboard.cgi";
-require "page_home.cgi";
-require "page_match.cgi";
-
-
+require "pages/page_browse.cgi";
+require "pages/page_profile.cgi";
+require "pages/page_register.cgi";
+require "pages/page_dashboard.cgi";
+require "pages/page_home.cgi";
+require "pages/page_match.cgi";
+require "pages/page_recover.cgi";
 
 $login = param('login');
 $password = param('password');
@@ -29,40 +29,32 @@ $logout = param('logout_page');
 $myProfile = param('my_page');
 $myEdit = param('edit_page');
 $matchPage = param('match_page');
+$homePage = param('home_page');
 $dashboardPage = param('my_dashboard');
 $registerPage = param('register_page');
+$recoverPage = param('recover_page');
 $completeReg = param('complete_registration');
+$completeRec = param('complete_recover');
 $pageNumber = param('page') || 0; 
 $edited = param('edited');
 $changeText = param('change_text');
 
-if (defined $logout) { 
+
+if (defined $login && defined $password || defined $logout) {
+
+    if (defined $logout) {$expires = 'now'};
+    if (undef $logout) {$expires = '3d'};
+
     $u = CGI::Cookie->new (
         -name => 'username',
         -value => $login,
-        -expires => 'now',
+        -expires => $expires,
     );
 
     $p = CGI::Cookie->new (
         -name => 'password',
         -value => $password,
-        -expires => 'now',
-    );
-
-    print "Set-Cookie: $u\n";
-    print "Set-Cookie: $p\n";
-    print "Location: love2041.cgi\n\n";
-}
-
-if (defined $login && defined $password) {
-    $u = CGI::Cookie->new (
-        -name => 'username',
-        -value => $login,
-    );
-
-    $p = CGI::Cookie->new (
-        -name => 'password',
-        -value => $password,
+        -expires => $expires, 
     );
 
      print "Set-Cookie: $u\n";
@@ -71,7 +63,6 @@ if (defined $login && defined $password) {
 } 
 
 print "Content-type: text/html\n\n";
-
 
 print start_html (
     -title => "LOVE2041",
@@ -83,6 +74,7 @@ print start_html (
     ],
     -script => [ 
         { -src => '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js' },
+        { -src => '//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js'},
         { -src => 'js/custom.js' },
     ],
 );
@@ -115,18 +107,25 @@ if (authenticate() && !$logout) {
     } elsif (defined $changeText) { 
         browsePageHeader();
         changeProfile();
-        dashboard();
+        printProfile($login);
     } else { 
         browsePageHeader();
-        dashboard();
+        printProfile($login);
 
     } 
 } elsif (defined $registerPage) { 
     registerPage();
+} elsif (defined $recoverPage) { 
+    enterUsername(); 
+
+} elsif (defined $completeRec) { 
+    authenticateUsername();
 } elsif (defined $completeReg) { 
     if (authRegistration()) { 
         confirmRegistration();
     } 
+} elsif (defined $homePage) { 
+    homePage();
 } else {
     homePage();
 }
@@ -145,7 +144,7 @@ sub convertAge {
 
 sub storeData { 
     @people = glob ("$directory/*");
-    open (FILE, '>username.txt');
+    open (FILE, '>', 'username.txt');
     foreach $people (@people) { 
         $user = getUsername($people);
         $user =~ s/ //g;
@@ -153,12 +152,17 @@ sub storeData {
         $count = 0; 
         foreach $line (@text) { 
             $count++; 
+            if ($line =~ /email:/) { 
+                $email = @text[$count];
+                $email =~ s/ +//g;
+            }
             if ($line =~ /password:/) { 
                 $pass = @text[$count]; 
                 $pass =~ s/ +//g;
-                print FILE "$user $pass\n";
+                
             }
         }
+        print FILE "$user $pass $email\n";
     }
 }
 
@@ -186,6 +190,12 @@ sub authenticate {
     return 0; 
 }
 
+
+=GET USERNAME 
+    - Gets the username from a directory
+    - Example: ./students/CoolPrincess80
+    - Returns: CoolPrincess80
+=cut
 sub getUsername { 
     $person = $_[0]; 
     $person =~ s/\.\///g;
@@ -194,6 +204,9 @@ sub getUsername {
     return $person;
 }
 
+=GET PROFILE 
+    - Gets the text from profile.txt from a username
+=cut
 sub getProfile { 
     $person = $_[0]; 
     $n = "$person/profile.txt";
@@ -203,6 +216,10 @@ sub getProfile {
     return @text; 
 }
 
+=GET PREFERENCES 
+    - Gets the text from preferences.txt from a username
+=cut
+
 sub getPreferences { 
     $person = $_[0]; 
     $n = "$person/preferences.txt";
@@ -210,4 +227,42 @@ sub getPreferences {
     $profile = join ('', <$profile>);
     @text = split ("\n", $profile);
     return @text; 
+}
+
+
+=GETHASH
+    - Retrieves all the text from a profile and stores it into a hashmap
+    - Keys are the section of the title, ie. username: 
+    - Values are the information beneath the title, ie. CoolPrincess60
+=cut
+sub getHash {
+    $tabs{'username:'} = ""; 
+    $tabs{'name:'} = ""; 
+    $tabs{'email:'} = ""; 
+    $tabs{'password:'} = ""; 
+    $tabs{'gender:'} = "";
+    $tabs{'weight:'} = ""; 
+    $tabs{'birthdate:'} = ""; 
+    $tabs{'hair_colour:'} = "";
+    $tabs{'degree:'} = ""; 
+    $tabs{'courses:'} = "";
+    $tabs{'favourite_bands:'} = ""; 
+    $tabs{'favourite_hobbies:'} = "";
+    $tabs{'favourite_movies:'} = ""; 
+    $tabs{'favourite_books:'} = "";
+    $tabs{'favourite_TV_shows:'} = ""; 
+    open $profile, "<", "students\/$_[0]\/profile.txt" or die;
+    @sub = split ("\n", $profile);
+    foreach $line (@sub) { 
+        if ($line != /^$/) { 
+            if ($line =~ /:/) { 
+                $line =~ s/\s//g;
+                $header = $line;
+            } else {
+                $line =~ s/\t//g;
+                $tabs{$header} .= "$line<br>\n"; 
+            }
+        }
+    }
+    return %tabs;
 }

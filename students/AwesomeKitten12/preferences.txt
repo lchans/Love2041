@@ -7,7 +7,7 @@ age:
 	min:
 		18
 	max:
-		31
+		50
 height:
 	min:
 		1.54m

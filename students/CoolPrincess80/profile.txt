@@ -1,101 +1,79 @@
-degree:
-        	Information Technology
-
-        
 favourite_bands:
-        	Bloc Party
-	Arctic Monkeys
-	Fatboy Slim & Riva Starr
-	Illy
-	Lorde
-	Something for Kate
-	Panama
-Little Birdy
+Bloc Party
+Arctic Monkeys
+Fatboy Slim & Riva Starr
+Illy
+Lorde
+Something for Kate
+Panama
 
-        
-birthdate:
-        	1981/12/08
-
-        
+degree:
+Software Engineering
 username:
-        	CoolPrincess80
-
-        
-weight:
-        	57kg
-
-        
-email:
-        	A.Akin@ugrad.unsw.edu.au
-
-        
-password:
-        	nicholas
-
-        
+CoolPrincess80
 favourite_hobbies:
-        	Volunteer Work
-	Gymnastics
-	Jewelry making
-	Python programming
-	Frisbee
-	Kart racing
+Volunteer Work
+Gymnastics
+Jewelry making
+Python programming
+Frisbee
+Kart racing
 
-        
-height:
-        	1.56m
-
-        
+password:
+nicholas
+weight:
+57kg
 favourite_movies:
-        	Quantum of Solace
-	Casino Royale
-
-        
+Quantum of Solace
+height:
+1.56m
 favourite_books:
-        	American Girl
-	A Tale of Two Cities
-	Fear of Flying
-	The Poky Little Puppy
-	Bokura series
-	The Shadowhunter Chronicles
+American Girl
+A Tale of Two Cities
+Fear of Flying
+The Poky Little Puppy
+Bokura series
+The Shadowhunter Chronicles
 
-        
+
+favourite_TV_shows:
+
+birthdate:
+1981/12/08
+profile_text:
+I love long walks on the beach
+email:
+A.Akin@ugrad.unsw.edu.au
 name:
-        	Azra Akin
-
-        
-courses:
-        	2011 S1 COMP1917
-	2011 S1 ENGG1000
-	2011 S1 MATH1131
-	2011 S1 PHYS1131
-	2012 S1 COMP1927
-	2012 S1 MATH1081
-	2012 S2 MATH1231
-	2012 S2 MATS1101
-	2012 S2 MMAN1300
-	2013 X1 ELEC1112
-	2013 S1 MATH2019
-	2013 S1 MMAN1130
-	2013 S1 MMAN2400
-	2013 S2 COMP2041
-	2013 S2 MATH2089
-	2013 S2 MMAN2100
-	2013 S2 MMAN2300
-	2014 S1 COMP2121
-	2014 S1 COMP3141
-	2014 S1 MMAN3200
-	2014 S1 MMAN3400
-	2014 S2 COMP3161
-	2014 S2 COMP3421
-	2014 S2 MMAN2600
-
-        
+Azra Akin
 hair_colour:
-        	red
+red
+courses:
+2011 S1 COMP1917
+2011 S1 ENGG1000
+2011 S1 MATH1131
+2011 S1 PHYS1131
+2012 S1 COMP1927
+2012 S1 MATH1081
+2012 S2 MATH1231
+2012 S2 MATS1101
+2012 S2 MMAN1300
+2013 X1 ELEC1112
+2013 S1 MATH2019
+2013 S1 MMAN1130
+2013 S1 MMAN2400
+2013 S2 COMP2041
+2013 S2 MATH2089
+2013 S2 MMAN2100
+2013 S2 MMAN2300
+2014 S1 COMP2121
+2014 S1 COMP3141
+2014 S1 MMAN3200
+2014 S1 MMAN3400
+2014 S2 COMP3161
+2014 S2 COMP3421
+2014 S2 MMAN2600
 
-        
+
 gender:
-        	female
-
-        
+female

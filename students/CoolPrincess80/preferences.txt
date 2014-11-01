@@ -10,3 +10,5 @@ age:
 		30
 gender:
 	male
+hair_colours:
+	brown

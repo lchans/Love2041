@@ -19,11 +19,23 @@ sub browsePageHeader {
                 </form>
                 <ul class="nav navbar-nav">
                     <li><a href='?match_page=true'>MATCH ME &#x2764</a></li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="?my_dashboard=true">My Dashboard</a></li>
                     <li><a href="?browse_page=true">View All Profiles!</a></li>
-                    <li><a href="?logout_page=true">Logout</a></li>
+
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                    <button class="btn btn-danger dropdown-toggle" type="button" id="dm" data-toggle="dropdown">
+                    Dashboard
+                    <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dm">
+                    <li role="presentation"><a role="menuitem"  href="?my_page=true">My Profile</a></li>
+                    <li role="presentation"><a role="menuitem"  href="?edit_page=true">Edit My Profile</a></li>
+                    <li role="presentation"><a role="menuitem"  href="?delete_profile=true">Delete My Profile</a></li>
+                    <li role="presentation"><a role="menuitem"  href="?logout_page=true">Logout</a></li>
+                    </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -95,7 +107,6 @@ sub createPreview {
     @people = glob ("$directory/*");
     $pageNumber = min ($pageNumber + 8, $#people);
      for ($i = $pageNumber - 8; $i < $pageNumber; $i++) { 
-        print $i;
         if (defined getUsername($people[$i])) { 
             $person = getUsername($people[$i]);
             @text = getProfile ($person);
